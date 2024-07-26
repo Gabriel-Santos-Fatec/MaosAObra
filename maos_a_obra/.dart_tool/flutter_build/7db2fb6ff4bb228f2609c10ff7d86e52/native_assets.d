@@ -1,0 +1,1 @@
+ C:\\development\\maos_a_obra\\.dart_tool\\flutter_build\\7db2fb6ff4bb228f2609c10ff7d86e52\\native_assets.yaml: 
