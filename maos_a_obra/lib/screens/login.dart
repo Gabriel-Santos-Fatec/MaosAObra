@@ -1,11 +1,13 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:maos_a_obra/components/cor_constante.dart';
 import 'package:http/http.dart' as http;
 import 'package:maos_a_obra/components/link.dart';
-import 'package:maos_a_obra/screens/cadastro.dart';
-import 'package:maos_a_obra/screens/orcamento.dart';
+import 'package:maos_a_obra/screens/cadastro2.dart';
+import 'package:maos_a_obra/screens/feed.dart';
+import 'package:maos_a_obra/screens/home.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -20,9 +22,35 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _senhaController = TextEditingController();
 
+  // Save access token
+  Future<void> saveAccessToken(int id, String role, String token) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    await prefs.setInt('id', id);
+    await prefs.setString('role', role);
+
+    await prefs.setString('access_token', token);
+  }
+
+  // Retrieve access token
+  Future<String?> getAccessToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('access_token');
+  }
+
+  // Decode the JWT to get the user ID
+  Map<String, dynamic>? decodeJwt(String token) {
+    try {
+      final jwt = JWT.decode(token);
+      return jwt.payload;
+    } catch (e) {
+      print('Error decoding JWT: $e');
+      return null;
+    }
+  }
+
   Future<void> loginUser(String username, String password) async {
-    // Change the URL according to your setup
-    final String url = '${Link.link}/user/login';
+    const String url = '${Link.link}/user/login';
 
     try {
       var response = await http.post(
@@ -31,22 +59,28 @@ class _LoginPageState extends State<LoginPage> {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: {
-          'username': username,
-          'password': password,
+          'username': _emailController.text,
+          'password': _senhaController.text,
         },
       );
 
       if (response.statusCode == 200) {
-        // Parse the response body as JSON
         var responseData = json.decode(response.body);
-        var accessToken = responseData['access_token'];
-        print('Login successful: $accessToken');
+        print('Login successful: ${response.body}');
+
+        var payload = decodeJwt(responseData['access_token']);
+        if (payload != null) {
+          var userId = payload['id'];
+          var userRole = payload['role'];
+          await saveAccessToken(userId, userRole, responseData['access_token']);
+          print(
+              'User ID: $userId, User Role: $userRole, token: ${responseData['access_token']}');
+        }
+
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const Orcamento()),
+          MaterialPageRoute(builder: (context) => const FeedPage()),
         );
-
-        // You can now use the accessToken for further requests
       } else {
         print('Login failed: ${response.statusCode}, ${response.body}');
       }
@@ -176,8 +210,10 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       ElevatedButton(
                         onPressed: () async {
-                          await loginUser(
-                              _emailController.text, _senhaController.text);
+                          if (_formKey.currentState!.validate()) {
+                            await loginUser(
+                                _emailController.text, _senhaController.text);
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: CorConstante.laranja,
@@ -309,7 +345,7 @@ class _LoginPageState extends State<LoginPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const CadastroPage()),
+                                builder: (context) => const Home()),
                           );
                         },
                         child: Text(

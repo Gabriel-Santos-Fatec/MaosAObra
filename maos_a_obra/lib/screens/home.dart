@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:maos_a_obra/screens/cadastro.dart';
+import 'package:maos_a_obra/screens/cadastro2.dart';
+import 'package:maos_a_obra/screens/edicao_perfil.dart';
 import 'package:maos_a_obra/screens/cadastro_especialidade.dart';
 
 class Home extends StatefulWidget {
@@ -92,7 +93,8 @@ class _HomeState extends State<Home> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const CadastroPage()),
+                                  builder: (context) =>
+                                      const CadastroPage(tipo: 1)),
                             );
                           },
                           style: ElevatedButton.styleFrom(
@@ -157,7 +159,7 @@ class _HomeState extends State<Home> {
                               context,
                               MaterialPageRoute(
                                   builder: (context) =>
-                                      const CadastroEspecialidadePage()),
+                                      const CadastroPage(tipo: 2)),
                             );
                           },
                           style: ElevatedButton.styleFrom(

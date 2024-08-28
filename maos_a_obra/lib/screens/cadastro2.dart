@@ -7,7 +7,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class CadastroPage extends StatefulWidget {
-  const CadastroPage({super.key});
+  final int tipo;
+  const CadastroPage({required this.tipo, super.key});
 
   @override
   _CadastroPageState createState() => _CadastroPageState();
@@ -36,7 +37,7 @@ class _CadastroPageState extends State<CadastroPage> {
 
   Future<void> checkServerStatus() async {
     // Change the URL according to your setup
-    final String url = '${Link.link}';
+    const String url = '${Link.link}';
 
     try {
       var response = await http.get(Uri.parse(url));
@@ -62,11 +63,19 @@ class _CadastroPageState extends State<CadastroPage> {
             'id': 0,
             'username': _emailController.text,
             'password': _senhaController.text,
+            'role': widget.tipo == 1
+                ? "client"
+                : widget.tipo == 2
+                    ? "service_provider"
+                    : "",
+            'is_super_admin': false,
+            'is_active': true
           }),
         );
 
-        if (response.statusCode == 200 || response.statusCode == 201) {
+        if (response.statusCode == 201) {
           print('Cadastro realizado com sucesso!');
+          Navigator.pop(context);
           Navigator.pop(context);
         } else {
           print('Erro no cadastro: ${response.body}');
@@ -101,7 +110,8 @@ class _CadastroPageState extends State<CadastroPage> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          content: const Text('As senhas não coincidem.'),
+          content:
+              Text('As senhas não coincidem. ${_emailController.text.length}'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -152,37 +162,9 @@ class _CadastroPageState extends State<CadastroPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.025),
-                    _buildTextField(controller: _nomeController, label: 'Nome'),
-                    SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.025),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.12),
                     _buildTextField(
                         controller: _emailController, label: 'Email'),
-                    SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.025),
-                    _buildTextField(
-                        controller: _telefoneController,
-                        label: 'Telefone',
-                        inputFormatters: [_telefoneFormatter]),
-                    SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.025),
-                    _buildTextField(
-                        controller: _dataNascimentoController,
-                        label: 'Data de nascimento',
-                        inputFormatters: [_dataNascimentoFormatter]),
-                    SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.025),
-                    _buildTextField(
-                        controller: _cpfController,
-                        label: 'CPF',
-                        inputFormatters: [_cpfFormatter]),
-                    SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.025),
-                    _buildTextField(
-                        controller: _cepController,
-                        label: 'CEP',
-                        inputFormatters: [_cepFormatter]),
                     SizedBox(
                         height: MediaQuery.of(context).size.height * 0.025),
                     _buildTextField(
@@ -199,13 +181,14 @@ class _CadastroPageState extends State<CadastroPage> {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(10, 0, 10, 20),
                       child: SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.2,
+                        width: MediaQuery.of(context).size.width * 0.35,
                         child: ElevatedButton(
                           onPressed: () {
                             _cadastrar();
+                            // print(_emailController.text);
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: CorConstante.azulClaro,
+                            backgroundColor: CorConstante.laranja,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
@@ -216,7 +199,7 @@ class _CadastroPageState extends State<CadastroPage> {
                             children: [
                               Center(
                                 child: Text(
-                                  'Ok',
+                                  'Cadastrar',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: Colors.white,
