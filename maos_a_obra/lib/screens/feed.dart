@@ -5,9 +5,11 @@ import 'package:maos_a_obra/components/cor_constante.dart';
 import 'package:maos_a_obra/components/link.dart';
 import 'package:maos_a_obra/screens/edicao_perfil.dart';
 import 'package:maos_a_obra/screens/dados_usuarios.dart';
+import 'package:maos_a_obra/screens/notificacao.dart';
+import 'package:maos_a_obra/screens/orcamento_todos.dart';
+import 'package:maos_a_obra/screens/ordens_servico.dart';
 import 'package:maos_a_obra/screens/post.dart';
 import 'dart:convert';
-
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FeedPage extends StatefulWidget {
@@ -19,11 +21,13 @@ class FeedPage extends StatefulWidget {
 
 class _FeedPageState extends State<FeedPage> {
   late Future<List<Post>> _postsFuture;
+  int _notificationCount = 0;
 
   @override
   void initState() {
     super.initState();
     _postsFuture = fetchPosts();
+    fetchNotifications(); // Fetch notifications when the page initializes
   }
 
   Future<List<Post>> fetchPosts() async {
@@ -46,11 +50,88 @@ class _FeedPageState extends State<FeedPage> {
     }
   }
 
+  Future<void> fetchNotifications() async {
+    const String apiUrl = '${Link.link}/notificacoes/';
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('access_token');
+
+    final response = await http.get(
+      Uri.parse(apiUrl),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      // Decodifica o corpo da resposta
+      List<dynamic> jsonData = json.decode(response.body);
+
+      // Contar o número total de itens na resposta
+      int notificationCount = jsonData.length;
+
+      // Atualiza o estado com o número total de notificações
+      setState(() {
+        _notificationCount = notificationCount;
+      });
+    } else {
+      print('Failed to load notifications');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Feed"),
+        actions: [
+          InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => NotificacaoPage()),
+              ).then((_) {
+                // Atualizar notificações ao retornar
+                setState(() {
+                  fetchNotifications();
+                });
+              });
+            },
+            child: Stack(
+              children: [
+                Icon(
+                  Icons.notifications,
+                  size: 30,
+                ),
+                if (_notificationCount >
+                    0) // Show badge only if there are notifications
+                  Positioned(
+                    right: 2,
+                    top: 2,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 14,
+                        minHeight: 14,
+                      ),
+                      child: Text(
+                        '$_notificationCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  )
+              ],
+            ),
+          ),
+        ],
       ),
       drawer: Drawer(
         child: ListView(
@@ -103,6 +184,28 @@ class _FeedPageState extends State<FeedPage> {
                 );
               },
             ),
+            ListTile(
+              leading: Icon(Icons.settings, color: CorConstante.azulClaro),
+              title: Text('Ordens',
+                  style: TextStyle(color: CorConstante.azulClaro)),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => OrdemServicoPage()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.settings, color: CorConstante.azulClaro),
+              title: Text('Orçamentos',
+                  style: TextStyle(color: CorConstante.azulClaro)),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => OrcamentosPage()),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -125,12 +228,12 @@ class _FeedPageState extends State<FeedPage> {
                   child: ComponentFeed(
                     ownerId: post.ownerId,
                     nome: post.title,
-                    user: "post.ownerName",
+                    user: post.ownerName,
                     descricao: post.description,
                     fotos: post.photoUrls.map((url) {
                       return Link.link + url.substring(21);
                     }).toList(),
-                    // userFoto: post.userFoto.substring(21),
+                    userFoto: post.userFoto.substring(21),
                     rating: 4.5,
                   ),
                 );
@@ -148,18 +251,18 @@ class Post {
   final String title;
   final String description;
   final int ownerId;
-  // final String ownerName;
+  final String ownerName;
   final List<String> photoUrls;
-  // final String userFoto;
+  final String userFoto;
 
   Post({
     required this.id,
     required this.title,
     required this.description,
     required this.ownerId,
-    // required this.ownerName,
+    required this.ownerName,
     required this.photoUrls,
-    // required this.userFoto,
+    required this.userFoto,
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -168,8 +271,8 @@ class Post {
       title: json['title'],
       description: json['description'],
       ownerId: json['owner_id'],
-      // ownerName: json['owner_name'],
-      // userFoto: json['owner_photo'],
+      ownerName: json['owner_full_name'],
+      userFoto: json['owner_photo'],
       photoUrls: List<String>.from(json['photo_urls']),
     );
   }

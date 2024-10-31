@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:maos_a_obra/screens/cadastro.dart';
+import 'package:maos_a_obra/screens/edicao_perfil.dart';
 import 'package:maos_a_obra/screens/home.dart';
 import 'package:maos_a_obra/screens/login.dart';
 

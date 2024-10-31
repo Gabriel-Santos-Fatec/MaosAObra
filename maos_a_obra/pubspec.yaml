@@ -41,11 +41,13 @@ dependencies:
   path: ^1.8.0
   google_fonts: ^4.0.3
   mime: ^1.0.0
+  intl:
   http:
   shared_preferences:
   dart_jsonwebtoken:
   flutter_rating_bar:
   font_awesome_flutter:
+  flutter_masked_text2:
 
 dev_dependencies:
   flutter_test:

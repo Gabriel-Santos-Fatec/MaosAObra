@@ -36,7 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     _postsFuture = fetchPosts();
-    print('Role value: $role');
+    print('Role value: ${widget.id}');
   }
 
   Future<List<Post>> fetchPosts() async {
@@ -159,8 +159,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) =>
-                                            const OrcamentoPage()),
+                                        builder: (context) => OrcamentoPage(
+                                              provider_id: widget.id,
+                                            )),
                                   );
                                 },
                                 child: Padding(
@@ -277,7 +278,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             fotos: post.photoUrls.map((url) {
                               return Link.link + url.substring(21);
                             }).toList(),
-                            // userFoto: post.userFoto.substring(21),
+                            userFoto: post.userFoto.substring(21),
                             rating: 4.5,
                           ),
                         );
@@ -299,18 +300,18 @@ class Post {
   final String title;
   final String description;
   final int ownerId;
-  // final String ownerName;
+  final String ownerName;
   final List<String> photoUrls;
-  // final String userFoto;
+  final String userFoto;
 
   Post({
     required this.id,
     required this.title,
     required this.description,
     required this.ownerId,
-    // required this.ownerName,
+    required this.ownerName,
     required this.photoUrls,
-    // required this.userFoto,
+    required this.userFoto,
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -319,8 +320,8 @@ class Post {
       title: json['title'],
       description: json['description'],
       ownerId: json['owner_id'],
-      // ownerName: json['owner_name'],
-      // userFoto: json['owner_photo'],
+      ownerName: json['owner_full_name'],
+      userFoto: json['owner_photo'],
       photoUrls: List<String>.from(json['photo_urls']),
     );
   }

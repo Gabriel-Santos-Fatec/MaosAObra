@@ -3,11 +3,18 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:maos_a_obra/components/cor_constante.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:maos_a_obra/screens/imagem_completa.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path/path.dart';
+import 'package:mime/mime.dart';
+import 'package:http_parser/http_parser.dart';
 
 import 'package:maos_a_obra/screens/imagem_completa.dart';
 
 class OrcamentoPage extends StatefulWidget {
-  const OrcamentoPage({super.key});
+  int provider_id;
+  OrcamentoPage({super.key, required this.provider_id});
 
   @override
   State<OrcamentoPage> createState() => _OrcamentoPageState();
@@ -28,6 +35,48 @@ class _OrcamentoPageState extends State<OrcamentoPage> {
         _imageFiles.addAll(pickedImages.map((image) => File(image.path)));
       }
     });
+  }
+
+  Future<void> _postOrcamento() async {
+    var url = Uri.parse('http://10.0.2.2:8000/orcamentos/create');
+    var request = http.MultipartRequest('POST', url);
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('access_token');
+    request.headers['Authorization'] = 'Bearer $token';
+
+    request.fields['provider_id'] = widget.provider_id.toString();
+    request.fields['description'] = _controller.text;
+    request.fields['is_open_to_visit'] = 'true';
+
+    for (var file in _imageFiles) {
+      String? mimeType = lookupMimeType(file.path);
+      var fileStream = http.ByteStream(file.openRead());
+      var length = await file.length();
+
+      var mediaType = mimeType != null ? MediaType.parse(mimeType) : null;
+
+      request.files.add(
+        http.MultipartFile(
+          'files', // Nome do campo conforme necessário pela sua API
+          fileStream,
+          length,
+          filename: basename(file.path),
+          contentType: mediaType,
+        ),
+      );
+    }
+
+    try {
+      var response = await request.send();
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('Orçamento enviado com sucesso!');
+      } else {
+        print('Falha ao enviar o orçamento: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Erro: $e');
+    }
   }
 
   @override
@@ -248,6 +297,10 @@ class _OrcamentoPageState extends State<OrcamentoPage> {
                         },
                       ),
                     ),
+              ElevatedButton(
+                onPressed: _postOrcamento,
+                child: Text('Enviar Orçamento'),
+              ),
             ],
           ),
         ),

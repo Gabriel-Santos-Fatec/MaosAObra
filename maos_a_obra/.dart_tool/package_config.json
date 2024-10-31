@@ -140,6 +140,12 @@
       "languageVersion": "3.1"
     },
     {
+      "name": "flutter_masked_text2",
+      "rootUri": "file:///C:/Users/gs_ga/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_masked_text2-0.9.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "flutter_plugin_android_lifecycle",
       "rootUri": "file:///C:/Users/gs_ga/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.19",
       "packageUri": "lib/",
@@ -240,6 +246,12 @@
       "rootUri": "file:///C:/Users/gs_ga/AppData/Local/Pub/Cache/hosted/pub.dev/image_picker_windows-0.2.1+1",
       "packageUri": "lib/",
       "languageVersion": "2.19"
+    },
+    {
+      "name": "intl",
+      "rootUri": "file:///C:/Users/gs_ga/AppData/Local/Pub/Cache/hosted/pub.dev/intl-0.19.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
     },
     {
       "name": "js",
@@ -500,7 +512,7 @@
       "languageVersion": "3.3"
     }
   ],
-  "generated": "2024-08-27T19:28:31.751401Z",
+  "generated": "2024-09-26T15:59:19.568042Z",
   "generator": "pub",
   "generatorVersion": "3.3.4"
 }
